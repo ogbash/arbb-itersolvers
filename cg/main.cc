@@ -101,13 +101,28 @@ void cg(const Matrix &A, const dense<f64> &b, dense<f64> &v)
   v = x;
 }
 
+void print_vector(dense<f64> &x)
+{
+  const_range<f64> r = x.read_only_range();
+  for (const_range_iterator<f64> i = r.begin(); i!=r.end(); i++)
+    std::cout<<value(*i)<<std::endl;
+}
+
 //int nrows[3] = {0,2,5};
 //int cols[7] = {0,1,0,1,2,1,2};
 //double vals[7] = {2.0, -1.0, -1.0, 2.0, -1.0, -1.0, 2.0};
 
-int main()
+int main(int argn, char **argv)
 {
-  int N=4;
+  int N=40;
+  if (argn>1) {
+    int d;
+    std::istringstream s(argv[1]);
+    s>>d;
+    N = d;
+  }
+  
+  std::cout<<"Grid size: "<<N<<std::endl;
   int n=(N-1)*(N-1);
   dense<f64> b(n);
   
@@ -118,9 +133,7 @@ int main()
   dense<f64> x(n);
   call(cg)(A, b, x);
 
-  const_range<f64> r = x.read_only_range();
-  for (const_range_iterator<f64> i = r.begin(); i!=r.end(); i++)
-    std::cout<<value(*i)<<std::endl;
+  //print_vector(x);
 
   return 0;
 }
