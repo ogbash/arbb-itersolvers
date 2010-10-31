@@ -11,9 +11,52 @@ struct Matrix
   dense<f64> vals;
 };
 
-void laplace(int N)
+void laplace(int N, Matrix &M)
 {
+  // N - number of segments
+  // n - number of unknowns
+  int n=(N-1)*(N-1);
+  int nnz = (5*n-4*(N-1));
+  int *nrows = new int[n];
+  int *cols = new int[nnz];
+  double *vals = new double[nnz];
 
+  int k=0;
+  for(int gi=0; gi<N-1; gi++) {
+    for(int gj=0; gj<N-1; gj++) {
+      int row_start = k;
+      int i = gi*(N-1)+gj;
+      nrows[i] = k;
+      //std::cout<<k<<" "<<nnz<<std::endl;
+      if (gi>0) {
+	cols[k] = i-(N-1);
+	vals[k] = -1.0;
+	k++;
+      }
+      if (gj>0) {
+	cols[k] = i-1;
+	vals[k] = -1.0;
+	k++;
+      }
+      cols[k] = i;
+      vals[k] = 4.0;
+      k++;
+      if (gj<N-2) {
+	cols[k] = i+1;
+	vals[k] = -1.0;
+	k++;
+      }
+      if (gi<N-2) {
+	cols[k] = i+(N-1);
+	vals[k] = -1.0;
+	k++;
+      }
+    }
+  }
+
+  bind(M.nrows, nrows, n);
+  bind(M.cols, cols, nnz);
+  bind(M.vals, vals, nnz);
 }
 
 void Ax(const Matrix &A, const dense<f64> &x, dense<f64> &y)
@@ -58,21 +101,21 @@ void cg(const Matrix &A, const dense<f64> &b, dense<f64> &v)
   v = x;
 }
 
-int nrows[3] = {0,2,5};
-int cols[7] = {0,1,0,1,2,1,2};
-double vals[7] = {2.0, -1.0, -1.0, 2.0, -1.0, -1.0, 2.0};
+//int nrows[3] = {0,2,5};
+//int cols[7] = {0,1,0,1,2,1,2};
+//double vals[7] = {2.0, -1.0, -1.0, 2.0, -1.0, -1.0, 2.0};
 
 int main()
 {
-  dense<f64> b(3);
+  int N=4;
+  int n=(N-1)*(N-1);
+  dense<f64> b(n);
   
   Matrix A;
-  bind(A.nrows, nrows, 3);
-  bind(A.cols, cols, 7);
-  bind(A.vals, vals, 7);
-  b[0] = 0.2;
+  laplace(N,A);
+  b[0] = 2.0;
 
-  dense<f64> x(3);
+  dense<f64> x(n);
   call(cg)(A, b, x);
 
   const_range<f64> r = x.read_only_range();
