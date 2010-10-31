@@ -4,21 +4,31 @@
 
 using namespace arbb;
 
-void Ax(const dense<i32> &nrows_c, const dense<i32> &cols_c, const dense<f64> &vals_c,
-	const dense<f64> &x_c, dense<f64> &y_c)
+struct Matrix
 {
-  dense<f64> colvals_c = gather(x_c, cols_c);
-  dense<f64> mvals_c = colvals_c * vals_c;
-  nested<f64> mvals_nc = reshape_nested_offsets(mvals_c, nrows_c);
-  y_c = add_reduce(mvals_nc);
+  dense<i32> nrows;
+  dense<i32> cols;
+  dense<f64> vals;
+};
+
+void laplace(int N)
+{
+
 }
 
-void cg(const dense<i32> &nrows, const dense<i32> &cols, const dense<f64> &vals,
-	const dense<f64> &b, dense<f64> &v)
+void Ax(const Matrix &A, const dense<f64> &x, dense<f64> &y)
+{
+  dense<f64> colvals = gather(x, A.cols);
+  dense<f64> mvals = colvals * A.vals;
+  nested<f64> nmvals = reshape_nested_offsets(mvals, A.nrows);
+  y = add_reduce(nmvals);
+}
+
+void cg(const Matrix &A, const dense<f64> &b, dense<f64> &v)
 {
   dense<f64> x(b.size());
   dense<f64> ax, p, q;
-  call(Ax)(nrows,cols,vals,x,ax);
+  call(Ax)(A,x,ax);
   dense<f64> r = b - ax;
   f64 rho, rho_prev, alpha, beta;
   i32 it = 0;
@@ -34,7 +44,7 @@ void cg(const dense<i32> &nrows, const dense<i32> &cols, const dense<f64> &vals,
       p = r + beta*p;
     } _end_if;
     
-    call(Ax)(nrows,cols,vals,p,q);
+    call(Ax)(A,p,q);
     alpha = rho/add_reduce(p*q);
 
     x += alpha*p;
@@ -54,18 +64,16 @@ double vals[7] = {2.0, -1.0, -1.0, 2.0, -1.0, -1.0, 2.0};
 
 int main()
 {
-  dense<i32> nrows_c;
-  dense<i32> cols_c;
-  dense<f64> vals_c;
   dense<f64> b(3);
   
-  bind(nrows_c, nrows, 3);
-  bind(cols_c, cols, 7);
-  bind(vals_c, vals, 7);
+  Matrix A;
+  bind(A.nrows, nrows, 3);
+  bind(A.cols, cols, 7);
+  bind(A.vals, vals, 7);
   b[0] = 0.2;
 
   dense<f64> x(3);
-  call(cg)(nrows_c, cols_c, vals_c, b, x);
+  call(cg)(A, b, x);
 
   const_range<f64> r = x.read_only_range();
   for (const_range_iterator<f64> i = r.begin(); i!=r.end(); i++)
