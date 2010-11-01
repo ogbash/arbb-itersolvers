@@ -67,7 +67,11 @@ void Ax(const Matrix &A, const dense<f64> &x, dense<f64> &y)
   y = add_reduce(nmvals);
 }
 
-void cg(const Matrix &A, const dense<f64> &b, dense<f64> &v)
+struct cg_info {
+  i32 n_iter;
+};
+
+void cg(const Matrix &A, const dense<f64> &b, dense<f64> &v, cg_info &cgi)
 {
   dense<f64> x(b.size());
   dense<f64> ax, p, q;
@@ -76,7 +80,7 @@ void cg(const Matrix &A, const dense<f64> &b, dense<f64> &v)
   f64 rho, rho_prev, alpha, beta;
   i32 it = 0;
 
-  _while (it<1000 && add_reduce(r*r)>1E-10) {
+  _while (it<10000 && sqrt(add_reduce(r*r))>1E-10) {
     
     rho = add_reduce(r*r);
     
@@ -99,6 +103,7 @@ void cg(const Matrix &A, const dense<f64> &b, dense<f64> &v)
   } _end_while;
 
   v = x;
+  cgi.n_iter = it;
 }
 
 void print_vector(dense<f64> &x)
@@ -108,9 +113,7 @@ void print_vector(dense<f64> &x)
     std::cout<<value(*i)<<std::endl;
 }
 
-//int nrows[3] = {0,2,5};
-//int cols[7] = {0,1,0,1,2,1,2};
-//double vals[7] = {2.0, -1.0, -1.0, 2.0, -1.0, -1.0, 2.0};
+// MAIN
 
 int main(int argn, char **argv)
 {
@@ -131,9 +134,17 @@ int main(int argn, char **argv)
   b[0] = 2.0;
 
   dense<f64> x(n);
-  call(cg)(A, b, x);
+  cg_info cgi;
+  std::cout<<"Starting CG"<<std::endl;
+  call(cg)(A, b, x, cgi);
+  std::cout<<"End CG"<<std::endl;
 
-  //print_vector(x);
+  dense<f64> Ax_;
+  Ax(A,x,Ax_);
+  dense<f64> bmAx = b-Ax_;
+  f64 r = add_reduce(bmAx*bmAx);
+  std::cout<<"r = "<<value(sqrt(r))<<std::endl;
+  std::cout<<"n_iter = "<<value(cgi.n_iter)<<std::endl;
 
   return 0;
 }
