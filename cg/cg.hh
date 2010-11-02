@@ -17,5 +17,9 @@ void cg(const Matrix &A,
 	const arbb::dense<arbb::f64> &b,
 	arbb::dense<arbb::f64> &v,
 	cg_info &cgi);
+void cg_sliced(const Matrix &A,
+	const arbb::dense<arbb::f64> &b,
+	arbb::dense<arbb::f64> &v,
+	cg_info &cgi);
 
 #endif
