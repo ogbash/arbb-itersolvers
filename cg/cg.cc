@@ -124,3 +124,46 @@ void cg_sliced(const Matrix &A, const dense<f64> &b, dense<f64> &v, cg_info &cgi
   v = x;
   cgi.n_iter = it;
 }
+
+void cg_orig(const Matrix_orig &A, const double *b, double *x, cg_info &cgi)
+{
+  for (int i=0; i<A.n; i++)
+    x[i] = 0.0;
+  double *r = new double[A.n];
+  double *p = new double[A.n];
+  double *q = new double[A.n];
+  double *ax = new double[A.n];
+  Ax_orig(A,x,ax);
+  for (int i=0; i<A.n; i++)
+    r[i] = b[i] - ax[i];
+  double rho, rho_prev, alpha, beta;
+  int it = 0;
+
+  while (it<10000 && sqrt(dot_orig(r,r,A.n))>1E-10) {
+    rho = dot_orig(r,r,A.n);
+  
+    if (it==0) {
+      for (int i=0; i<A.n; i++)
+	p[i] = r[i];
+    } else {
+      beta = rho/rho_prev;
+      for (int i=0; i<A.n; i++)
+	p[i] = r[i] + beta*p[i];
+    }
+    
+    Ax_orig(A,p,q);
+    alpha = rho/dot_orig(p,q,A.n);
+
+    for (int i=0; i<A.n; i++) {
+      x[i] += alpha*p[i];
+      r[i] -= alpha*q[i];
+    }
+
+    rho_prev = rho;
+
+    it += 1;
+  }
+
+  cgi.n_iter = it;
+  delete r,p,q,ax;
+}

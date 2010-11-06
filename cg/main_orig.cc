@@ -9,7 +9,7 @@
 
 using namespace arbb;
 
-// MAIN
+// MAIN without ArBB
 
 int main(int argn, char **argv)
 {
@@ -25,29 +25,33 @@ int main(int argn, char **argv)
   }
   
   std::cout<<"Grid size: "<<N<<std::endl;
-  int n=(N-1)*(N-1);
-  dense<f64> b(n);
+  int n=(N-1)*(N-1);    
+  double *b = new double[n];
   
-  Matrix A;
-  laplace(N,A);
+  Matrix_orig A;
+  laplace_orig(N,A);
+  for (int i=0; i<A.n; i++)
+    b[i] = 0.0;
   b[0] = 2.0;
 
-  dense<f64> x(n);
+  double *x = new double[n];
   cg_info cgi;
   std::cout<<"Starting CG"<<std::endl;
   clock_gettime(CLOCK_REALTIME, &start);
-  cg_sliced(A, b, x, cgi);
+  cg_orig(A, b, x, cgi);
   clock_gettime(CLOCK_REALTIME, &end);
   std::cout<<"End CG"<<std::endl;
 
   lapse = timespec_lapse(&start, &end);
   std::cout<<"lapse="<<lapse<<std::endl;
 
-  dense<f64> Ax_;
-  Ax(A,x,Ax_);
-  dense<f64> bmAx = b-Ax_;
-  f64 r = add_reduce(bmAx*bmAx);
-  std::cout<<"r = "<<value(sqrt(r))<<std::endl;
+  double *Ax_ = new double[A.n];
+  Ax_orig(A,x,Ax_);
+  double *bmAx = new double[A.n];
+  for (int i=0; i<A.n; i++)
+    bmAx[i] = b[i]-Ax_[i];
+  double r = dot_orig(bmAx, bmAx, A.n);
+  std::cout<<"r = "<<sqrt(r)<<std::endl;
   std::cout<<"n_iter = "<<value(cgi.n_iter)<<std::endl;
 
   return 0;
