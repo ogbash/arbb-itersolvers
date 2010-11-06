@@ -12,9 +12,12 @@ all: cg cg_orig
 cg : $(OBJS) main.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
+cg_sliced : $(OBJS) main_sliced.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
 cg_orig : $(OBJS) main_orig.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:
-	rm -f cg cg_orig
+	rm -f cg cg_sliced cg_orig
 	rm -f *.o

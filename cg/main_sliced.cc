@@ -36,7 +36,7 @@ int main(int argn, char **argv)
   cg_info cgi;
   std::cout<<"Starting CG"<<std::endl;
   clock_gettime(CLOCK_REALTIME, &start);
-  call(cg)(A, b, x, cgi);
+  cg_sliced(A, b, x, cgi);
   clock_gettime(CLOCK_REALTIME, &end);
   std::cout<<"End CG"<<std::endl;
 
