@@ -4,14 +4,14 @@
 
 using namespace arbb;
 
-void laplace_gen(int N, int *nrows, int *cols, double *vals)
+void laplace_gen(int N, ind_ct *nrows, ind_ct *cols, double *vals)
 {
   int n=(N-1)*(N-1);
   int k=0;
   for(int gi=0; gi<N-1; gi++) {
     for(int gj=0; gj<N-1; gj++) {
-      int row_start = k;
-      int i = gi*(N-1)+gj;
+      ind_ct row_start = k;
+      ind_ct i = gi*(N-1)+gj;
       nrows[i] = k;
       //std::cout<<k<<" "<<nnz<<std::endl;
       if (gi>0) {
@@ -47,8 +47,8 @@ void laplace(int N, Matrix &M)
   // n - number of unknowns
   int n=(N-1)*(N-1);
   int nnz = (5*n-4*(N-1));
-  int *nrows = new int[n];
-  int *cols = new int[nnz];
+  ind_ct *nrows = new ind_ct[n];
+  ind_ct *cols = new ind_ct[nnz];
   double *vals = new double[nnz];
 
   laplace_gen(N, nrows, cols, vals);
@@ -64,8 +64,8 @@ void laplace_orig(int N, Matrix_orig &M)
   // n - number of unknowns
   int n=(N-1)*(N-1);
   int nnz = (5*n-4*(N-1));
-  int *nrows = new int[n];
-  int *cols = new int[nnz];
+  ind_ct *nrows = new ind_ct[n];
+  ind_ct *cols = new ind_ct[nnz];
   double *vals = new double[nnz];
 
   laplace_gen(N, nrows, cols, vals);

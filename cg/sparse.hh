@@ -3,18 +3,21 @@
 
 #include <arbb.hpp>
 
+typedef arbb::i64 ind_t;
+typedef arbb::uncaptured<ind_t>::type ind_ct;
+
 struct Matrix
 {
-  arbb::dense<arbb::i32> nrows;
-  arbb::dense<arbb::i32> cols;
+  arbb::dense<ind_t> nrows;
+  arbb::dense<ind_t> cols;
   arbb::dense<arbb::f64> vals;
 };
 
 struct Matrix_orig
 {
   int n, nnz;
-  int *nrows;
-  int *cols;
+  ind_ct *nrows;
+  ind_ct *cols;
   double *vals;
 };
 
