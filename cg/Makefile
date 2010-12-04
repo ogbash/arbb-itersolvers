@@ -25,5 +25,5 @@ ax_orig : $(OBJS) main_ax_orig.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:
-	rm -f cg cg_sliced cg_orig ax
+	rm -f cg cg_sliced cg_orig ax ax_orig
 	rm -f *.o
