@@ -1,0 +1,7 @@
+This is an incomplete effort to implement iterative solvers with Intel ARBB. Tests are run with ./cg 500 and some results can be found from [1]. 
+
+ * "original" is a version without ArBB
+ * "sliced" has calls to ArBB from inside CG rather than the whole CG is one ArBB call. It is meant to be used with non-vectorizable preconditioners. 
+
+[1] https://spreadsheets.google.com/pub?key=0AiCRoM2-FQtodEttLW8yeDdUYXZtdzlpaW1tYWZKM1E&hl=en&output=html
+
